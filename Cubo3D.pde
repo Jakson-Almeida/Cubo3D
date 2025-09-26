@@ -324,6 +324,9 @@ class RubiksCube {
             float newY = (targetJ - 1) * (size + gap);
             float newZ = (targetK - 1) * (size + gap);
             cubies[targetI][targetJ][targetK].pos.set(newX, newY, newZ);
+            
+            // CRITICAL: Update the piece's colors based on its new position
+            cubies[targetI][targetJ][targetK].updateColorsBasedOnPosition();
           }
         }
       }
@@ -362,6 +365,8 @@ class RubiksCube {
           float y = (j - 1) * (size + gap);
           float z = (k - 1) * (size + gap);
           cubies[i][j][k].reset(x, y, z);
+          // Update colors to match reset positions
+          cubies[i][j][k].updateColorsBasedOnPosition();
         }
       }
     }
@@ -426,6 +431,27 @@ class Cubie {
     visualRotationY = 0;
     visualRotationZ = 0;
     visualCenter.set(0, 0, 0);
+  }
+  
+  void updateColorsBasedOnPosition() {
+    // Reset all colors to gray (internal)
+    for (int i = 0; i < 6; i++) {
+      colors[i] = color(30); // Cor padrão (cinza escuro)
+    }
+    
+    // Update colors based on current position
+    // Direita (X positivo)
+    if (pos.x > 0) colors[0] = color(255, 0, 0);    // Vermelho
+    // Esquerda (X negativo)
+    if (pos.x < 0) colors[1] = color(255, 165, 0);  // Laranja
+    // Superior (Y positivo)
+    if (pos.y > 0) colors[2] = color(255, 255, 255);// Branco
+    // Inferior (Y negativo)
+    if (pos.y < 0) colors[3] = color(255, 255, 0);  // Amarelo
+    // Frontal (Z positivo)
+    if (pos.z > 0) colors[4] = color(0, 255, 0);    // Verde
+    // Traseiro (Z negativo)
+    if (pos.z < 0) colors[5] = color(0, 0, 255);    // Azul
   }
   
   void display() {
