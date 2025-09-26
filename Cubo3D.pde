@@ -318,6 +318,12 @@ class RubiksCube {
           // Place the rotated piece in the correct 3D position
           if (targetI >= 0 && targetJ >= 0 && targetK >= 0) {
             cubies[targetI][targetJ][targetK] = rotatedFace[faceI][faceJ];
+            
+            // CRITICAL: Update the piece's 3D position to match its new matrix position
+            float newX = (targetI - 1) * (size + gap);
+            float newY = (targetJ - 1) * (size + gap);
+            float newZ = (targetK - 1) * (size + gap);
+            cubies[targetI][targetJ][targetK].pos.set(newX, newY, newZ);
           }
         }
       }
