@@ -169,36 +169,37 @@ class RubiksCube {
   }
   
   void applyMove(Move move) {
-    // Aplica rotação à face inteira como um grupo
+    // Aplica rotação visual à face inteira (sem modificar posições)
     switch(move.face) {
       case "U": // Face Superior (Y máximo)
-        rotateFace(1, 0, 0, move.angle); // Rotate around Y axis
+        setFaceVisualRotation(1, 0, 0, move.angle); // Rotate around Y axis
         break;
       case "D": // Face Inferior (Y mínimo)
-        rotateFace(-1, 0, 0, move.angle); // Rotate around Y axis
+        setFaceVisualRotation(-1, 0, 0, move.angle); // Rotate around Y axis
         break;
       case "L": // Face Esquerda (X mínimo)
-        rotateFace(0, -1, 0, move.angle); // Rotate around X axis
+        setFaceVisualRotation(0, -1, 0, move.angle); // Rotate around X axis
         break;
       case "R": // Face Direita (X máximo)
-        rotateFace(0, 1, 0, move.angle); // Rotate around X axis
+        setFaceVisualRotation(0, 1, 0, move.angle); // Rotate around X axis
         break;
       case "F": // Face Frontal (Z máximo)
-        rotateFace(0, 0, 1, move.angle); // Rotate around Z axis
+        setFaceVisualRotation(0, 0, 1, move.angle); // Rotate around Z axis
         break;
       case "B": // Face Traseira (Z mínimo)
-        rotateFace(0, 0, -1, move.angle); // Rotate around Z axis
+        setFaceVisualRotation(0, 0, -1, move.angle); // Rotate around Z axis
         break;
     }
   }
   
-  void rotateFace(int faceX, int faceY, int faceZ, float angle) {
+  void setFaceVisualRotation(int faceX, int faceY, int faceZ, float angle) {
     // Encontra o centro da face
     float centerX = faceX * (size + gap);
     float centerY = faceY * (size + gap);
     float centerZ = faceZ * (size + gap);
+    PVector faceCenter = new PVector(centerX, centerY, centerZ);
     
-    // Aplica rotação a todos os cubies da face
+    // Aplica rotação visual a todos os cubies da face (sem modificar posições)
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
@@ -206,14 +207,14 @@ class RubiksCube {
           if (isInFace(i, j, k, faceX, faceY, faceZ)) {
             Cubie cubie = cubies[i][j][k];
             
-            // Translada para o centro da face, rotaciona, e translada de volta
-            PVector relativePos = PVector.sub(cubie.pos, new PVector(centerX, centerY, centerZ));
-            
-            // Aplica rotação baseada no eixo da face
-            PVector rotatedPos = rotateAroundAxis(relativePos, faceX, faceY, faceZ, angle);
-            
-            // Translada de volta para a posição final
-            cubie.pos = PVector.add(rotatedPos, new PVector(centerX, centerY, centerZ));
+            // Set visual rotation based on face axis
+            if (faceX != 0) {
+              cubie.setVisualRotation(angle, 0, 0, faceCenter);
+            } else if (faceY != 0) {
+              cubie.setVisualRotation(0, angle, 0, faceCenter);
+            } else if (faceZ != 0) {
+              cubie.setVisualRotation(0, 0, angle, faceCenter);
+            }
           }
         }
       }
@@ -227,85 +228,95 @@ class RubiksCube {
     return false;
   }
   
-  PVector rotateAroundAxis(PVector pos, int axisX, int axisY, int axisZ, float angle) {
-    PVector result = pos.copy();
-    
-    if (axisX != 0) {
-      // Rotação ao redor do eixo X
-      float y = result.y;
-      float z = result.z;
-      result.y = y * cos(angle) - z * sin(angle);
-      result.z = y * sin(angle) + z * cos(angle);
-    } else if (axisY != 0) {
-      // Rotação ao redor do eixo Y
-      float x = result.x;
-      float z = result.z;
-      result.x = x * cos(angle) + z * sin(angle);
-      result.z = -x * sin(angle) + z * cos(angle);
-    } else if (axisZ != 0) {
-      // Rotação ao redor do eixo Z
-      float x = result.x;
-      float y = result.y;
-      result.x = x * cos(angle) - y * sin(angle);
-      result.y = x * sin(angle) + y * cos(angle);
-    }
-    
-    return result;
-  }
   
   void finalizeMove(Move move) {
-    // When rotation is complete, we need to swap the pieces to their final positions
-    // This ensures the cube maintains its structural integrity
+    // When rotation is complete, swap pieces in the 3x3x3 matrix
+    // and reset visual rotations
     switch(move.face) {
       case "U": // Face Superior
-        swapFacePieces(1, 0, 0, move.clockwise);
+        swapFacePiecesInMatrix(1, 0, 0, move.clockwise);
         break;
       case "D": // Face Inferior
-        swapFacePieces(-1, 0, 0, move.clockwise);
+        swapFacePiecesInMatrix(-1, 0, 0, move.clockwise);
         break;
       case "L": // Face Esquerda
-        swapFacePieces(0, -1, 0, move.clockwise);
+        swapFacePiecesInMatrix(0, -1, 0, move.clockwise);
         break;
       case "R": // Face Direita
-        swapFacePieces(0, 1, 0, move.clockwise);
+        swapFacePiecesInMatrix(0, 1, 0, move.clockwise);
         break;
       case "F": // Face Frontal
-        swapFacePieces(0, 0, 1, move.clockwise);
+        swapFacePiecesInMatrix(0, 0, 1, move.clockwise);
         break;
       case "B": // Face Traseira
-        swapFacePieces(0, 0, -1, move.clockwise);
+        swapFacePiecesInMatrix(0, 0, -1, move.clockwise);
         break;
     }
   }
   
-  void swapFacePieces(int faceX, int faceY, int faceZ, boolean clockwise) {
-    // Get the face pieces
-    ArrayList<Cubie> facePieces = new ArrayList<Cubie>();
-    ArrayList<PVector> originalPositions = new ArrayList<PVector>();
+  void swapFacePiecesInMatrix(int faceX, int faceY, int faceZ, boolean clockwise) {
+    // Create a temporary 3x3 matrix to hold the face pieces
+    Cubie[][] tempFace = new Cubie[3][3];
     
+    // Extract face pieces from the 3x3x3 matrix
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
           if (isInFace(i, j, k, faceX, faceY, faceZ)) {
-            facePieces.add(cubies[i][j][k]);
-            originalPositions.add(new PVector(
-              (i - 1) * (size + gap),
-              (j - 1) * (size + gap),
-              (k - 1) * (size + gap)
-            ));
+            // Map 3D coordinates to 2D face coordinates
+            int faceI, faceJ;
+            if (faceX != 0) {
+              faceI = j; faceJ = k;
+            } else if (faceY != 0) {
+              faceI = i; faceJ = k;
+            } else {
+              faceI = i; faceJ = j;
+            }
+            tempFace[faceI][faceJ] = cubies[i][j][k];
           }
         }
       }
     }
     
-    // Reset pieces to their original positions
-    for (int i = 0; i < facePieces.size(); i++) {
-      facePieces.get(i).pos = originalPositions.get(i);
+    // Rotate the 2D face matrix
+    Cubie[][] rotatedFace = new Cubie[3][3];
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (clockwise) {
+          rotatedFace[j][2-i] = tempFace[i][j];
+        } else {
+          rotatedFace[2-j][i] = tempFace[i][j];
+        }
+      }
     }
     
-    // Apply the final 90-degree rotation to swap positions
-    float finalAngle = clockwise ? HALF_PI : -HALF_PI;
-    rotateFace(faceX, faceY, faceZ, finalAngle);
+    // Put rotated pieces back into the 3x3x3 matrix
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (isInFace(i, j, k, faceX, faceY, faceZ)) {
+            int faceI, faceJ;
+            if (faceX != 0) {
+              faceI = j; faceJ = k;
+            } else if (faceY != 0) {
+              faceI = i; faceJ = k;
+            } else {
+              faceI = i; faceJ = j;
+            }
+            cubies[i][j][k] = rotatedFace[faceI][faceJ];
+          }
+        }
+      }
+    }
+    
+    // Reset visual rotations for all pieces
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          cubies[i][j][k].resetVisualRotation();
+        }
+      }
+    }
   }
   
   void addMove(String face, boolean clockwise) {
@@ -343,6 +354,12 @@ class Cubie {
   float size;
   color[] colors;
   
+  // Visual rotation properties for animation
+  float visualRotationX = 0;
+  float visualRotationY = 0;
+  float visualRotationZ = 0;
+  PVector visualCenter = new PVector(0, 0, 0);
+  
   Cubie(float x, float y, float z, float size) {
     pos = new PVector(x, y, z);
     originalPos = new PVector(x, y, z);
@@ -370,11 +387,40 @@ class Cubie {
   
   void reset(float x, float y, float z) {
     pos.set(x, y, z);
+    // Reset visual rotations
+    visualRotationX = 0;
+    visualRotationY = 0;
+    visualRotationZ = 0;
+    visualCenter.set(0, 0, 0);
+  }
+  
+  void setVisualRotation(float rx, float ry, float rz, PVector center) {
+    visualRotationX = rx;
+    visualRotationY = ry;
+    visualRotationZ = rz;
+    visualCenter = center.copy();
+  }
+  
+  void resetVisualRotation() {
+    visualRotationX = 0;
+    visualRotationY = 0;
+    visualRotationZ = 0;
+    visualCenter.set(0, 0, 0);
   }
   
   void display() {
     pushMatrix();
     translate(pos.x, pos.y, pos.z);
+    
+    // Apply visual rotation if any
+    if (visualRotationX != 0 || visualRotationY != 0 || visualRotationZ != 0) {
+      // Translate to visual center, rotate, translate back
+      translate(-visualCenter.x, -visualCenter.y, -visualCenter.z);
+      rotateX(visualRotationX);
+      rotateY(visualRotationY);
+      rotateZ(visualRotationZ);
+      translate(visualCenter.x, visualCenter.y, visualCenter.z);
+    }
     
     // Desenha as faces coloridas
     drawFaces();
