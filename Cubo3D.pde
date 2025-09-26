@@ -290,20 +290,34 @@ class RubiksCube {
       }
     }
     
-    // Put rotated pieces back into the 3x3x3 matrix
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        for (int k = 0; k < 3; k++) {
-          if (isInFace(i, j, k, faceX, faceY, faceZ)) {
-            int faceI, faceJ;
-            if (faceX != 0) {
-              faceI = j; faceJ = k;
-            } else if (faceY != 0) {
-              faceI = i; faceJ = k;
-            } else {
-              faceI = i; faceJ = j;
-            }
-            cubies[i][j][k] = rotatedFace[faceI][faceJ];
+    // Create a mapping from 2D face coordinates back to 3D matrix coordinates
+    // This is the key fix - we need to map rotated 2D coordinates back to 3D
+    for (int faceI = 0; faceI < 3; faceI++) {
+      for (int faceJ = 0; faceJ < 3; faceJ++) {
+        if (rotatedFace[faceI][faceJ] != null) {
+          // Find the 3D coordinates for this face position
+          int targetI = -1, targetJ = -1, targetK = -1;
+          
+          if (faceX != 0) {
+            // Face is perpendicular to X axis
+            targetI = (faceX > 0) ? 2 : 0;
+            targetJ = faceI;
+            targetK = faceJ;
+          } else if (faceY != 0) {
+            // Face is perpendicular to Y axis
+            targetI = faceI;
+            targetJ = (faceY > 0) ? 2 : 0;
+            targetK = faceJ;
+          } else if (faceZ != 0) {
+            // Face is perpendicular to Z axis
+            targetI = faceI;
+            targetJ = faceJ;
+            targetK = (faceZ > 0) ? 2 : 0;
+          }
+          
+          // Place the rotated piece in the correct 3D position
+          if (targetI >= 0 && targetJ >= 0 && targetK >= 0) {
+            cubies[targetI][targetJ][targetK] = rotatedFace[faceI][faceJ];
           }
         }
       }
