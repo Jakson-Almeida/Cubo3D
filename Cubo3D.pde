@@ -360,6 +360,8 @@ class RubiksCube {
             float newZ = (targetK - 1) * (size + gap);
             cubies[targetI][targetJ][targetK].pos.set(newX, newY, newZ);
             
+            // CRITICAL: Rotate the piece to match its new orientation
+            cubies[targetI][targetJ][targetK].rotatePieceToMatchOrientation(faceX, faceY, faceZ, clockwise);
             
             placedCount++;
           }
@@ -497,6 +499,64 @@ class Cubie {
       default:
         return false;
     }
+  }
+  
+  void rotatePieceToMatchOrientation(int faceX, int faceY, int faceZ, boolean clockwise) {
+    // Rotate the piece's color array to match its new orientation
+    // This ensures the faces point in the correct directions
+    
+    color[] newColors = new color[6];
+    System.arraycopy(colors, 0, newColors, 0, 6);
+    
+    if (faceX != 0) {
+      // Face rotation around X axis
+      if (clockwise) {
+        // Rotate colors around X axis clockwise
+        newColors[2] = colors[5]; // Top <- Back
+        newColors[4] = colors[2]; // Front <- Top
+        newColors[3] = colors[4]; // Bottom <- Front
+        newColors[5] = colors[3]; // Back <- Bottom
+      } else {
+        // Rotate colors around X axis counter-clockwise
+        newColors[2] = colors[4]; // Top <- Front
+        newColors[5] = colors[2]; // Back <- Top
+        newColors[3] = colors[5]; // Bottom <- Back
+        newColors[4] = colors[3]; // Front <- Bottom
+      }
+    } else if (faceY != 0) {
+      // Face rotation around Y axis
+      if (clockwise) {
+        // Rotate colors around Y axis clockwise
+        newColors[0] = colors[5]; // Right <- Back
+        newColors[4] = colors[0]; // Front <- Right
+        newColors[1] = colors[4]; // Left <- Front
+        newColors[5] = colors[1]; // Back <- Left
+      } else {
+        // Rotate colors around Y axis counter-clockwise
+        newColors[0] = colors[4]; // Right <- Front
+        newColors[5] = colors[0]; // Back <- Right
+        newColors[1] = colors[5]; // Left <- Back
+        newColors[4] = colors[1]; // Front <- Left
+      }
+    } else if (faceZ != 0) {
+      // Face rotation around Z axis
+      if (clockwise) {
+        // Rotate colors around Z axis clockwise
+        newColors[0] = colors[3]; // Right <- Bottom
+        newColors[2] = colors[0]; // Top <- Right
+        newColors[1] = colors[2]; // Left <- Top
+        newColors[3] = colors[1]; // Bottom <- Left
+      } else {
+        // Rotate colors around Z axis counter-clockwise
+        newColors[0] = colors[2]; // Right <- Top
+        newColors[3] = colors[0]; // Bottom <- Right
+        newColors[1] = colors[3]; // Left <- Bottom
+        newColors[2] = colors[1]; // Top <- Left
+      }
+    }
+    
+    // Update the piece's colors
+    colors = newColors;
   }
   
   void display() {
