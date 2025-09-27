@@ -258,6 +258,9 @@ class RubiksCube {
     // Create a temporary 3x3 matrix to hold the face pieces
     Cubie[][] tempFace = new Cubie[3][3];
     
+    // Debug: Count pieces in face
+    int pieceCount = 0;
+    
     // Extract face pieces from the 3x3x3 matrix
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
@@ -273,25 +276,57 @@ class RubiksCube {
               faceI = i; faceJ = j;
             }
             tempFace[faceI][faceJ] = cubies[i][j][k];
+            pieceCount++;
           }
         }
       }
+    }
+    
+    // Debug: Verify we have exactly 9 pieces (3x3 face)
+    if (pieceCount != 9) {
+      println("ERROR: Expected 9 pieces in face, got " + pieceCount);
+      println("Face: " + faceX + "," + faceY + "," + faceZ);
+    }
+    
+    // Debug: Verify tempFace is properly filled
+    int tempFaceCount = 0;
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (tempFace[i][j] != null) tempFaceCount++;
+      }
+    }
+    if (tempFaceCount != 9) {
+      println("ERROR: tempFace should have 9 pieces, got " + tempFaceCount);
     }
     
     // Rotate the 2D face matrix
     Cubie[][] rotatedFace = new Cubie[3][3];
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
-        if (clockwise) {
-          rotatedFace[j][2-i] = tempFace[i][j];
-        } else {
-          rotatedFace[2-j][i] = tempFace[i][j];
+        if (tempFace[i][j] != null) {
+          if (clockwise) {
+            rotatedFace[j][2-i] = tempFace[i][j];
+          } else {
+            rotatedFace[2-j][i] = tempFace[i][j];
+          }
         }
       }
     }
     
+    // Debug: Count rotated pieces
+    int rotatedCount = 0;
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (rotatedFace[i][j] != null) rotatedCount++;
+      }
+    }
+    if (rotatedCount != 9) {
+      println("ERROR: rotatedFace should have 9 pieces, got " + rotatedCount);
+    }
+    
     // Create a mapping from 2D face coordinates back to 3D matrix coordinates
     // This is the key fix - we need to map rotated 2D coordinates back to 3D
+    int placedCount = 0;
     for (int faceI = 0; faceI < 3; faceI++) {
       for (int faceJ = 0; faceJ < 3; faceJ++) {
         if (rotatedFace[faceI][faceJ] != null) {
@@ -327,9 +362,16 @@ class RubiksCube {
             
             // CRITICAL: Update the piece's colors based on its new position
             cubies[targetI][targetJ][targetK].updateColorsBasedOnPosition();
+            
+            placedCount++;
           }
         }
       }
+    }
+    
+    // Debug: Verify all pieces were placed
+    if (placedCount != 9) {
+      println("ERROR: Should have placed 9 pieces, placed " + placedCount);
     }
     
     // Reset visual rotations for all pieces
