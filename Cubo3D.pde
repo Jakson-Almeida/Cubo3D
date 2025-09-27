@@ -381,15 +381,8 @@ class RubiksCube {
       }
     }
     
-    // CRITICAL: Update colors for ALL pieces after rotation
-    // This ensures external faces are correctly colored based on current positions
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 3; j++) {
-        for (int k = 0; k < 3; k++) {
-          cubies[i][j][k].updateColorsBasedOnPosition();
-        }
-      }
-    }
+    // Colors are now handled dynamically in the display method
+    // No need to update colors globally - they're determined at render time
   }
   
   void addMove(String face, boolean clockwise) {
@@ -415,8 +408,6 @@ class RubiksCube {
           float y = (j - 1) * (size + gap);
           float z = (k - 1) * (size + gap);
           cubies[i][j][k].reset(x, y, z);
-          // Update colors to match reset positions
-          cubies[i][j][k].updateColorsBasedOnPosition();
         }
       }
     }
@@ -484,25 +475,28 @@ class Cubie {
   }
   
   void updateColorsBasedOnPosition() {
-    // Reset all colors to gray (internal)
-    for (int i = 0; i < 6; i++) {
-      colors[i] = color(30); // Cor padrão (cinza escuro)
+    // This method is now deprecated - we'll use a different approach
+    // Keep the original colors and let the display method handle external faces
+  }
+  
+  boolean isFaceExternal(int faceIndex) {
+    // Check if a specific face of this piece is on the external surface of the cube
+    switch(faceIndex) {
+      case 0: // Right face (X positive)
+        return pos.x > 0;
+      case 1: // Left face (X negative)
+        return pos.x < 0;
+      case 2: // Top face (Y positive)
+        return pos.y > 0;
+      case 3: // Bottom face (Y negative)
+        return pos.y < 0;
+      case 4: // Front face (Z positive)
+        return pos.z > 0;
+      case 5: // Back face (Z negative)
+        return pos.z < 0;
+      default:
+        return false;
     }
-    
-    // Update colors based on current position
-    // Only show colored faces if they are on the external surface of the cube
-    // Direita (X positivo) - Red face
-    if (pos.x > 0) colors[0] = color(255, 0, 0);    // Vermelho
-    // Esquerda (X negativo) - Orange face  
-    if (pos.x < 0) colors[1] = color(255, 165, 0);  // Laranja
-    // Superior (Y positivo) - White face
-    if (pos.y > 0) colors[2] = color(255, 255, 255);// Branco
-    // Inferior (Y negativo) - Yellow face
-    if (pos.y < 0) colors[3] = color(255, 255, 0);  // Amarelo
-    // Frontal (Z positivo) - Green face
-    if (pos.z > 0) colors[4] = color(0, 255, 0);    // Verde
-    // Traseiro (Z negativo) - Blue face
-    if (pos.z < 0) colors[5] = color(0, 0, 255);    // Azul
   }
   
   void display() {
@@ -531,43 +525,67 @@ class Cubie {
   void drawFaces() {
     beginShape(QUADS);
     
-    // Face direita (X positivo)
-    fill(colors[0]);
+    // Face direita (X positivo) - Red
+    if (isFaceExternal(0)) {
+      fill(colors[0]); // Red
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(size/2, -size/2, -size/2);
     vertex(size/2, -size/2, size/2);
     vertex(size/2, size/2, size/2);
     vertex(size/2, size/2, -size/2);
     
-    // Face esquerda (X negativo)
-    fill(colors[1]);
+    // Face esquerda (X negativo) - Orange
+    if (isFaceExternal(1)) {
+      fill(colors[1]); // Orange
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(-size/2, -size/2, -size/2);
     vertex(-size/2, -size/2, size/2);
     vertex(-size/2, size/2, size/2);
     vertex(-size/2, size/2, -size/2);
     
-    // Face superior (Y positivo)
-    fill(colors[2]);
+    // Face superior (Y positivo) - White
+    if (isFaceExternal(2)) {
+      fill(colors[2]); // White
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(-size/2, size/2, -size/2);
     vertex(size/2, size/2, -size/2);
     vertex(size/2, size/2, size/2);
     vertex(-size/2, size/2, size/2);
     
-    // Face inferior (Y negativo)
-    fill(colors[3]);
+    // Face inferior (Y negativo) - Yellow
+    if (isFaceExternal(3)) {
+      fill(colors[3]); // Yellow
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(-size/2, -size/2, -size/2);
     vertex(size/2, -size/2, -size/2);
     vertex(size/2, -size/2, size/2);
     vertex(-size/2, -size/2, size/2);
     
-    // Face frontal (Z positivo)
-    fill(colors[4]);
+    // Face frontal (Z positivo) - Green
+    if (isFaceExternal(4)) {
+      fill(colors[4]); // Green
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(-size/2, -size/2, size/2);
     vertex(size/2, -size/2, size/2);
     vertex(size/2, size/2, size/2);
     vertex(-size/2, size/2, size/2);
     
-    // Face traseira (Z negativo)
-    fill(colors[5]);
+    // Face traseira (Z negativo) - Blue
+    if (isFaceExternal(5)) {
+      fill(colors[5]); // Blue
+    } else {
+      fill(30); // Gray for internal faces
+    }
     vertex(-size/2, -size/2, -size/2);
     vertex(size/2, -size/2, -size/2);
     vertex(size/2, size/2, -size/2);
