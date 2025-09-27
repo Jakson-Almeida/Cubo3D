@@ -360,8 +360,6 @@ class RubiksCube {
             float newZ = (targetK - 1) * (size + gap);
             cubies[targetI][targetJ][targetK].pos.set(newX, newY, newZ);
             
-            // CRITICAL: Update the piece's colors based on its new position
-            cubies[targetI][targetJ][targetK].updateColorsBasedOnPosition();
             
             placedCount++;
           }
@@ -379,6 +377,16 @@ class RubiksCube {
       for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
           cubies[i][j][k].resetVisualRotation();
+        }
+      }
+    }
+    
+    // CRITICAL: Update colors for ALL pieces after rotation
+    // This ensures external faces are correctly colored based on current positions
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          cubies[i][j][k].updateColorsBasedOnPosition();
         }
       }
     }
@@ -482,17 +490,18 @@ class Cubie {
     }
     
     // Update colors based on current position
-    // Direita (X positivo)
+    // Only show colored faces if they are on the external surface of the cube
+    // Direita (X positivo) - Red face
     if (pos.x > 0) colors[0] = color(255, 0, 0);    // Vermelho
-    // Esquerda (X negativo)
+    // Esquerda (X negativo) - Orange face  
     if (pos.x < 0) colors[1] = color(255, 165, 0);  // Laranja
-    // Superior (Y positivo)
+    // Superior (Y positivo) - White face
     if (pos.y > 0) colors[2] = color(255, 255, 255);// Branco
-    // Inferior (Y negativo)
+    // Inferior (Y negativo) - Yellow face
     if (pos.y < 0) colors[3] = color(255, 255, 0);  // Amarelo
-    // Frontal (Z positivo)
+    // Frontal (Z positivo) - Green face
     if (pos.z > 0) colors[4] = color(0, 255, 0);    // Verde
-    // Traseiro (Z negativo)
+    // Traseiro (Z negativo) - Blue face
     if (pos.z < 0) colors[5] = color(0, 0, 255);    // Azul
   }
   
