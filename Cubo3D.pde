@@ -9,7 +9,6 @@ int moveInterval = 500; // 0.5 segundos
 boolean isFloating = true;
 float floatOffset = 0;
 float rotationSpeed = 0.03;
-boolean showStickers = false;
 
 void settings() {
   fullScreen(P3D);
@@ -97,7 +96,7 @@ void keyPressed() {
   } else if (key == 'f' || key == 'F') {
     isFloating = !isFloating;
   } else if (key == 'c' || key == 'C') {
-    showStickers = !showStickers;
+    // showStickers = !showStickers; // This line is removed
   } else if (key == ' ') {
     cube.randomMove();
     lastMoveTime = millis();
@@ -604,7 +603,7 @@ class Cubie {
     beginShape(QUADS);
     
     // Face direita (X positivo) - Red
-    if (showStickers && isFaceExternal(0)) {
+    if (isFaceExternal(0)) {
       fill(colors[0]); // Red
     } else {
       fill(30); // Gray for internal faces
@@ -615,7 +614,7 @@ class Cubie {
     vertex(size/2, size/2, -size/2);
     
     // Face esquerda (X negativo) - Orange
-    if (showStickers && isFaceExternal(1)) {
+    if (isFaceExternal(1)) {
       fill(colors[1]); // Orange
     } else {
       fill(30); // Gray for internal faces
@@ -626,7 +625,7 @@ class Cubie {
     vertex(-size/2, size/2, -size/2);
     
     // Face superior (Y positivo) - White
-    if (showStickers && isFaceExternal(2)) {
+    if (isFaceExternal(2)) {
       fill(colors[2]); // White
     } else {
       fill(30); // Gray for internal faces
@@ -637,7 +636,7 @@ class Cubie {
     vertex(-size/2, size/2, size/2);
     
     // Face inferior (Y negativo) - Yellow
-    if (showStickers && isFaceExternal(3)) {
+    if (isFaceExternal(3)) {
       fill(colors[3]); // Yellow
     } else {
       fill(30); // Gray for internal faces
@@ -648,7 +647,7 @@ class Cubie {
     vertex(-size/2, -size/2, size/2);
     
     // Face frontal (Z positivo) - Green
-    if (showStickers && isFaceExternal(4)) {
+    if (isFaceExternal(4)) {
       fill(colors[4]); // Green
     } else {
       fill(30); // Gray for internal faces
@@ -659,7 +658,7 @@ class Cubie {
     vertex(-size/2, size/2, size/2);
     
     // Face traseira (Z negativo) - Blue
-    if (showStickers && isFaceExternal(5)) {
+    if (isFaceExternal(5)) {
       fill(colors[5]); // Blue
     } else {
       fill(30); // Gray for internal faces
