@@ -525,45 +525,45 @@ class Cubie {
     System.arraycopy(colors, 0, newColors, 0, 6);
     
     if (faceX != 0) {
-      // Face rotation around X axis
+      // Rotation around +X or -X axis; 'clockwise' is already local to the face
       if (clockwise) {
-        // Rotate colors around X axis clockwise
-        newColors[2] = colors[5]; // Top <- Back
-        newColors[4] = colors[2]; // Front <- Top
-        newColors[3] = colors[4]; // Bottom <- Front
-        newColors[5] = colors[3]; // Back <- Bottom
-      } else {
-        // Rotate colors around X axis counter-clockwise
+        // +X clockwise (viewing from +X): Front -> Top -> Back -> Bottom -> Front
         newColors[2] = colors[4]; // Top <- Front
         newColors[5] = colors[2]; // Back <- Top
         newColors[3] = colors[5]; // Bottom <- Back
         newColors[4] = colors[3]; // Front <- Bottom
+      } else {
+        // +X counter-clockwise: Front -> Bottom -> Back -> Top -> Front
+        newColors[2] = colors[5]; // Top <- Back
+        newColors[4] = colors[2]; // Front <- Top
+        newColors[3] = colors[4]; // Bottom <- Front
+        newColors[5] = colors[3]; // Back <- Bottom
       }
     } else if (faceY != 0) {
-      // Face rotation around Y axis
+      // Rotation around +Y or -Y axis
       if (clockwise) {
-        // Rotate colors around Y axis clockwise
-        newColors[0] = colors[5]; // Right <- Back
-        newColors[4] = colors[0]; // Front <- Right
-        newColors[1] = colors[4]; // Left <- Front
-        newColors[5] = colors[1]; // Back <- Left
-      } else {
-        // Rotate colors around Y axis counter-clockwise
+        // +Y clockwise (viewing from +Y): Front -> Right -> Back -> Left -> Front
         newColors[0] = colors[4]; // Right <- Front
         newColors[5] = colors[0]; // Back <- Right
         newColors[1] = colors[5]; // Left <- Back
         newColors[4] = colors[1]; // Front <- Left
+      } else {
+        // +Y counter-clockwise: Front -> Left -> Back -> Right -> Front
+        newColors[0] = colors[5]; // Right <- Back
+        newColors[4] = colors[0]; // Front <- Right
+        newColors[1] = colors[4]; // Left <- Front
+        newColors[5] = colors[1]; // Back <- Left
       }
     } else if (faceZ != 0) {
-      // Face rotation around Z axis
+      // Rotation around +Z or -Z axis
       if (clockwise) {
-        // Rotate colors around Z axis clockwise
+        // +Z clockwise (viewing from +Z): Right -> Top -> Left -> Bottom -> Right
         newColors[0] = colors[3]; // Right <- Bottom
         newColors[2] = colors[0]; // Top <- Right
         newColors[1] = colors[2]; // Left <- Top
         newColors[3] = colors[1]; // Bottom <- Left
       } else {
-        // Rotate colors around Z axis counter-clockwise
+        // +Z counter-clockwise
         newColors[0] = colors[2]; // Right <- Top
         newColors[3] = colors[0]; // Bottom <- Right
         newColors[1] = colors[3]; // Left <- Bottom
