@@ -198,6 +198,12 @@ class RubiksCube {
     float centerY = faceY * (size + gap);
     float centerZ = faceZ * (size + gap);
     PVector faceCenter = new PVector(centerX, centerY, centerZ);
+
+    // Ajusta ângulo para faces negativas (o "clockwise" local é invertido)
+    float adjustedAngle = angle;
+    if (faceX < 0 || faceY < 0 || faceZ < 0) {
+      adjustedAngle = -angle;
+    }
     
     // Aplica rotação visual a todos os cubies da face (sem modificar posições)
     for (int i = 0; i < 3; i++) {
@@ -206,14 +212,13 @@ class RubiksCube {
           // Verifica se este cubie está na face que está sendo rotacionada
           if (isInFace(i, j, k, faceX, faceY, faceZ)) {
             Cubie cubie = cubies[i][j][k];
-            
             // Set visual rotation based on face axis
             if (faceX != 0) {
-              cubie.setVisualRotation(angle, 0, 0, faceCenter);
+              cubie.setVisualRotation(adjustedAngle, 0, 0, faceCenter);
             } else if (faceY != 0) {
-              cubie.setVisualRotation(0, angle, 0, faceCenter);
+              cubie.setVisualRotation(0, adjustedAngle, 0, faceCenter);
             } else if (faceZ != 0) {
-              cubie.setVisualRotation(0, 0, angle, faceCenter);
+              cubie.setVisualRotation(0, 0, adjustedAngle, faceCenter);
             }
           }
         }
@@ -258,6 +263,12 @@ class RubiksCube {
     // Create a temporary 3x3 matrix to hold the face pieces
     Cubie[][] tempFace = new Cubie[3][3];
     
+    // Ajusta sentido local (clockwise local) para faces negativas
+    boolean localClockwise = clockwise;
+    if (faceX < 0 || faceY < 0 || faceZ < 0) {
+      localClockwise = !clockwise;
+    }
+    
     // Debug: Count pieces in face
     int pieceCount = 0;
     
@@ -266,14 +277,20 @@ class RubiksCube {
       for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
           if (isInFace(i, j, k, faceX, faceY, faceZ)) {
-            // Map 3D coordinates to 2D face coordinates
+            // Map 3D coordinates to 2D face coordinates (u,v) com espelhamento por eixo negativo
             int faceI, faceJ;
             if (faceX != 0) {
-              faceI = j; faceJ = k;
+              // u=j (Y), v=k (Z); para X negativo, espelha v
+              faceI = j;
+              faceJ = (faceX > 0) ? k : (2 - k);
             } else if (faceY != 0) {
-              faceI = i; faceJ = k;
+              // u=i (X), v=k (Z); para Y negativo, espelha u
+              faceI = (faceY > 0) ? i : (2 - i);
+              faceJ = k;
             } else {
-              faceI = i; faceJ = j;
+              // Z face: u=i (X), v=j (Y); para Z negativo, espelha u
+              faceI = (faceZ > 0) ? i : (2 - i);
+              faceJ = j;
             }
             tempFace[faceI][faceJ] = cubies[i][j][k];
             pieceCount++;
@@ -299,12 +316,12 @@ class RubiksCube {
       println("ERROR: tempFace should have 9 pieces, got " + tempFaceCount);
     }
     
-    // Rotate the 2D face matrix
+    // Rotate the 2D face matrix usando o sentido local
     Cubie[][] rotatedFace = new Cubie[3][3];
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         if (tempFace[i][j] != null) {
-          if (clockwise) {
+          if (localClockwise) {
             rotatedFace[j][2-i] = tempFace[i][j];
           } else {
             rotatedFace[2-j][i] = tempFace[i][j];
@@ -324,8 +341,7 @@ class RubiksCube {
       println("ERROR: rotatedFace should have 9 pieces, got " + rotatedCount);
     }
     
-    // Create a mapping from 2D face coordinates back to 3D matrix coordinates
-    // This is the key fix - we need to map rotated 2D coordinates back to 3D
+    // Create a mapping from 2D face coordinates back to 3D matrix coordinates (inverso do acima)
     int placedCount = 0;
     for (int faceI = 0; faceI < 3; faceI++) {
       for (int faceJ = 0; faceJ < 3; faceJ++) {
@@ -334,18 +350,18 @@ class RubiksCube {
           int targetI = -1, targetJ = -1, targetK = -1;
           
           if (faceX != 0) {
-            // Face is perpendicular to X axis
+            // i fixo, j=faceI, k depende de espelho
             targetI = (faceX > 0) ? 2 : 0;
             targetJ = faceI;
-            targetK = faceJ;
+            targetK = (faceX > 0) ? faceJ : (2 - faceJ);
           } else if (faceY != 0) {
-            // Face is perpendicular to Y axis
-            targetI = faceI;
+            // j fixo, i depende de espelho, k=faceJ
+            targetI = (faceY > 0) ? faceI : (2 - faceI);
             targetJ = (faceY > 0) ? 2 : 0;
             targetK = faceJ;
           } else if (faceZ != 0) {
-            // Face is perpendicular to Z axis
-            targetI = faceI;
+            // k fixo, i depende de espelho, j=faceJ
+            targetI = (faceZ > 0) ? faceI : (2 - faceI);
             targetJ = faceJ;
             targetK = (faceZ > 0) ? 2 : 0;
           }
@@ -360,8 +376,8 @@ class RubiksCube {
             float newZ = (targetK - 1) * (size + gap);
             cubies[targetI][targetJ][targetK].pos.set(newX, newY, newZ);
             
-            // CRITICAL: Rotate the piece to match its new orientation
-            cubies[targetI][targetJ][targetK].rotatePieceToMatchOrientation(faceX, faceY, faceZ, clockwise);
+            // CRITICAL: Rotate the piece to match its new orientation (usa sentido local)
+            cubies[targetI][targetJ][targetK].rotatePieceToMatchOrientation(faceX, faceY, faceZ, localClockwise);
             
             placedCount++;
           }
@@ -392,10 +408,8 @@ class RubiksCube {
   }
   
   void randomMove() {
-    String[] faces = {"U", "D", "L", "R", "F", "B"};
-    String face = faces[(int)random(faces.length)];
-    boolean clockwise = random(1) > 0.5;
-    moves.add(new Move(face, clockwise));
+    // Deterministic single move for consistency testing
+    moves.add(new Move("F", true));
   }
   
   void reset() {
@@ -509,45 +523,45 @@ class Cubie {
     System.arraycopy(colors, 0, newColors, 0, 6);
     
     if (faceX != 0) {
-      // Face rotation around X axis
+      // Rotation around +X or -X axis; 'clockwise' is already local to the face
       if (clockwise) {
-        // Rotate colors around X axis clockwise
-        newColors[2] = colors[5]; // Top <- Back
-        newColors[4] = colors[2]; // Front <- Top
-        newColors[3] = colors[4]; // Bottom <- Front
-        newColors[5] = colors[3]; // Back <- Bottom
-      } else {
-        // Rotate colors around X axis counter-clockwise
+        // +X clockwise (viewing from +X): Front -> Top -> Back -> Bottom -> Front
         newColors[2] = colors[4]; // Top <- Front
         newColors[5] = colors[2]; // Back <- Top
         newColors[3] = colors[5]; // Bottom <- Back
         newColors[4] = colors[3]; // Front <- Bottom
+      } else {
+        // +X counter-clockwise: Front -> Bottom -> Back -> Top -> Front
+        newColors[2] = colors[5]; // Top <- Back
+        newColors[4] = colors[2]; // Front <- Top
+        newColors[3] = colors[4]; // Bottom <- Front
+        newColors[5] = colors[3]; // Back <- Bottom
       }
     } else if (faceY != 0) {
-      // Face rotation around Y axis
+      // Rotation around +Y or -Y axis
       if (clockwise) {
-        // Rotate colors around Y axis clockwise
-        newColors[0] = colors[5]; // Right <- Back
-        newColors[4] = colors[0]; // Front <- Right
-        newColors[1] = colors[4]; // Left <- Front
-        newColors[5] = colors[1]; // Back <- Left
-      } else {
-        // Rotate colors around Y axis counter-clockwise
+        // +Y clockwise (viewing from +Y): Front -> Right -> Back -> Left -> Front
         newColors[0] = colors[4]; // Right <- Front
         newColors[5] = colors[0]; // Back <- Right
         newColors[1] = colors[5]; // Left <- Back
         newColors[4] = colors[1]; // Front <- Left
+      } else {
+        // +Y counter-clockwise: Front -> Left -> Back -> Right -> Front
+        newColors[0] = colors[5]; // Right <- Back
+        newColors[4] = colors[0]; // Front <- Right
+        newColors[1] = colors[4]; // Left <- Front
+        newColors[5] = colors[1]; // Back <- Left
       }
     } else if (faceZ != 0) {
-      // Face rotation around Z axis
+      // Rotation around +Z or -Z axis
       if (clockwise) {
-        // Rotate colors around Z axis clockwise
+        // +Z clockwise (viewing from +Z): Right -> Top -> Left -> Bottom -> Right
         newColors[0] = colors[3]; // Right <- Bottom
         newColors[2] = colors[0]; // Top <- Right
         newColors[1] = colors[2]; // Left <- Top
         newColors[3] = colors[1]; // Bottom <- Left
       } else {
-        // Rotate colors around Z axis counter-clockwise
+        // +Z counter-clockwise
         newColors[0] = colors[2]; // Right <- Top
         newColors[3] = colors[0]; // Bottom <- Right
         newColors[1] = colors[3]; // Left <- Bottom
