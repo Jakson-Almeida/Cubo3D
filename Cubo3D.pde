@@ -9,6 +9,7 @@ int moveInterval = 500; // 0.5 segundos
 boolean isFloating = true;
 float floatOffset = 0;
 float rotationSpeed = 0.03;
+boolean showStickers = false;
 
 void settings() {
   fullScreen(P3D);
@@ -62,8 +63,9 @@ void drawHUD() {
   text("Controles:", 20, 60);
   text("R: Resetar cubo", 20, 90);
   text("F: Alternar flutuação", 20, 120);
-  text("Espaço: Movimento aleatório", 20, 150);
-  text("Setas: Rotacionar visualização", 20, 180);
+  text("C: Alternar stickers", 20, 150);
+  text("Espaço: Movimento aleatório", 20, 180);
+  text("Setas: Rotacionar visualização", 20, 210);
   
   textAlign(RIGHT, TOP);
   text("Movimentos:", width-20, 60);
@@ -94,6 +96,8 @@ void keyPressed() {
     cube.reset();
   } else if (key == 'f' || key == 'F') {
     isFloating = !isFloating;
+  } else if (key == 'c' || key == 'C') {
+    showStickers = !showStickers;
   } else if (key == ' ') {
     cube.randomMove();
     lastMoveTime = millis();
@@ -600,7 +604,7 @@ class Cubie {
     beginShape(QUADS);
     
     // Face direita (X positivo) - Red
-    if (isFaceExternal(0)) {
+    if (showStickers && isFaceExternal(0)) {
       fill(colors[0]); // Red
     } else {
       fill(30); // Gray for internal faces
@@ -611,7 +615,7 @@ class Cubie {
     vertex(size/2, size/2, -size/2);
     
     // Face esquerda (X negativo) - Orange
-    if (isFaceExternal(1)) {
+    if (showStickers && isFaceExternal(1)) {
       fill(colors[1]); // Orange
     } else {
       fill(30); // Gray for internal faces
@@ -622,7 +626,7 @@ class Cubie {
     vertex(-size/2, size/2, -size/2);
     
     // Face superior (Y positivo) - White
-    if (isFaceExternal(2)) {
+    if (showStickers && isFaceExternal(2)) {
       fill(colors[2]); // White
     } else {
       fill(30); // Gray for internal faces
@@ -633,7 +637,7 @@ class Cubie {
     vertex(-size/2, size/2, size/2);
     
     // Face inferior (Y negativo) - Yellow
-    if (isFaceExternal(3)) {
+    if (showStickers && isFaceExternal(3)) {
       fill(colors[3]); // Yellow
     } else {
       fill(30); // Gray for internal faces
@@ -644,7 +648,7 @@ class Cubie {
     vertex(-size/2, -size/2, size/2);
     
     // Face frontal (Z positivo) - Green
-    if (isFaceExternal(4)) {
+    if (showStickers && isFaceExternal(4)) {
       fill(colors[4]); // Green
     } else {
       fill(30); // Gray for internal faces
@@ -655,7 +659,7 @@ class Cubie {
     vertex(-size/2, size/2, size/2);
     
     // Face traseira (Z negativo) - Blue
-    if (isFaceExternal(5)) {
+    if (showStickers && isFaceExternal(5)) {
       fill(colors[5]); // Blue
     } else {
       fill(30); // Gray for internal faces
