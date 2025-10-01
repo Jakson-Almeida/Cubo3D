@@ -500,19 +500,20 @@ class Cubie {
   
   boolean isFaceExternal(int faceIndex) {
     // Check if a specific face of this piece is on the external surface of the cube
+    // For a 3x3x3 cube, pieces are positioned at -1, 0, 1 for each axis
     switch(faceIndex) {
       case 0: // Right face (X positive)
-        return pos.x > 0;
+        return pos.x > 0.5; // X = 1 (rightmost column)
       case 1: // Left face (X negative)
-        return pos.x < 0;
+        return pos.x < -0.5; // X = -1 (leftmost column)
       case 2: // Top face (Y positive)
-        return pos.y > 0;
+        return pos.y > 0.5; // Y = 1 (topmost row)
       case 3: // Bottom face (Y negative)
-        return pos.y < 0;
+        return pos.y < -0.5; // Y = -1 (bottommost row)
       case 4: // Front face (Z positive)
-        return pos.z > 0;
+        return pos.z > 0.5; // Z = 1 (frontmost layer)
       case 5: // Back face (Z negative)
-        return pos.z < 0;
+        return pos.z < -0.5; // Z = -1 (backmost layer)
       default:
         return false;
     }
