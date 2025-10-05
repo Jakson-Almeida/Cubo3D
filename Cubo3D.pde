@@ -5,7 +5,7 @@ import peasy.org.apache.commons.math.geometry.*;
 PeasyCam cam;
 RubiksCube cube;
 long lastMoveTime = 0;
-int moveInterval = 500; // 0.5 segundos
+int moveInterval = 2000; // 2 segundos
 boolean isFloating = true;
 float floatOffset = 0;
 float rotationSpeed = 0.03;
