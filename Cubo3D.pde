@@ -280,19 +280,19 @@ class RubiksCube {
       for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
           if (isInFace(i, j, k, faceX, faceY, faceZ)) {
-            // Map 3D coordinates to 2D face coordinates (u,v) com espelhamento por eixo negativo
+            // Map 3D coordinates to 2D face coordinates (u,v)
             int faceI, faceJ;
             if (faceX != 0) {
-              // u=j (Y), v=k (Z); para X negativo, espelha v
+              // X face: u=j (Y), v=k (Z)
               faceI = j;
-              faceJ = (faceX > 0) ? k : (2 - k);
+              faceJ = k;
             } else if (faceY != 0) {
-              // u=i (X), v=k (Z); para Y negativo, espelha u
-              faceI = (faceY > 0) ? i : (2 - i);
+              // Y face: u=i (X), v=k (Z)
+              faceI = i;
               faceJ = k;
             } else {
-              // Z face: u=i (X), v=j (Y); para Z negativo, espelha u
-              faceI = (faceZ > 0) ? i : (2 - i);
+              // Z face: u=i (X), v=j (Y)
+              faceI = i;
               faceJ = j;
             }
             tempFace[faceI][faceJ] = cubies[i][j][k];
@@ -353,18 +353,18 @@ class RubiksCube {
           int targetI = -1, targetJ = -1, targetK = -1;
           
           if (faceX != 0) {
-            // i fixo, j=faceI, k depende de espelho
+            // X face: i is fixed, j=faceI, k=faceJ
             targetI = (faceX > 0) ? 2 : 0;
             targetJ = faceI;
-            targetK = (faceX > 0) ? faceJ : (2 - faceJ);
+            targetK = faceJ;
           } else if (faceY != 0) {
-            // j fixo, i depende de espelho, k=faceJ
-            targetI = (faceY > 0) ? faceI : (2 - faceI);
+            // Y face: j is fixed, i=faceI, k=faceJ
+            targetI = faceI;
             targetJ = (faceY > 0) ? 2 : 0;
             targetK = faceJ;
           } else if (faceZ != 0) {
-            // k fixo, i depende de espelho, j=faceJ
-            targetI = (faceZ > 0) ? faceI : (2 - faceI);
+            // Z face: k is fixed, i=faceI, j=faceJ
+            targetI = faceI;
             targetJ = faceJ;
             targetK = (faceZ > 0) ? 2 : 0;
           }
@@ -527,45 +527,45 @@ class Cubie {
     System.arraycopy(colors, 0, newColors, 0, 6);
     
     if (faceX != 0) {
-      // Rotation around +X or -X axis; 'clockwise' is already local to the face
+      // Rotation around X axis (Left/Right faces)
       if (clockwise) {
-        // +X clockwise (viewing from +X): Front -> Top -> Back -> Bottom -> Front
-        newColors[2] = colors[4]; // Top <- Front
+        // Clockwise around X: Top->Back->Bottom->Front->Top
         newColors[5] = colors[2]; // Back <- Top
         newColors[3] = colors[5]; // Bottom <- Back
         newColors[4] = colors[3]; // Front <- Bottom
+        newColors[2] = colors[4]; // Top <- Front
       } else {
-        // +X counter-clockwise: Front -> Bottom -> Back -> Top -> Front
-        newColors[2] = colors[5]; // Top <- Back
+        // Counter-clockwise around X: Top->Front->Bottom->Back->Top
         newColors[4] = colors[2]; // Front <- Top
         newColors[3] = colors[4]; // Bottom <- Front
         newColors[5] = colors[3]; // Back <- Bottom
+        newColors[2] = colors[5]; // Top <- Back
       }
     } else if (faceY != 0) {
-      // Rotation around +Y or -Y axis
+      // Rotation around Y axis (Top/Bottom faces)
       if (clockwise) {
-        // +Y clockwise (viewing from +Y): Front -> Right -> Back -> Left -> Front
+        // Clockwise around Y: Front->Right->Back->Left->Front
         newColors[0] = colors[4]; // Right <- Front
         newColors[5] = colors[0]; // Back <- Right
         newColors[1] = colors[5]; // Left <- Back
         newColors[4] = colors[1]; // Front <- Left
       } else {
-        // +Y counter-clockwise: Front -> Left -> Back -> Right -> Front
-        newColors[0] = colors[5]; // Right <- Back
-        newColors[4] = colors[0]; // Front <- Right
+        // Counter-clockwise around Y: Front->Left->Back->Right->Front
         newColors[1] = colors[4]; // Left <- Front
         newColors[5] = colors[1]; // Back <- Left
+        newColors[0] = colors[5]; // Right <- Back
+        newColors[4] = colors[0]; // Front <- Right
       }
     } else if (faceZ != 0) {
-      // Rotation around +Z or -Z axis
+      // Rotation around Z axis (Front/Back faces)
       if (clockwise) {
-        // +Z clockwise (viewing from +Z): Right -> Top -> Left -> Bottom -> Right
-        newColors[0] = colors[3]; // Right <- Bottom
-        newColors[2] = colors[0]; // Top <- Right
+        // Clockwise around Z: Top->Left->Bottom->Right->Top
         newColors[1] = colors[2]; // Left <- Top
         newColors[3] = colors[1]; // Bottom <- Left
+        newColors[0] = colors[3]; // Right <- Bottom
+        newColors[2] = colors[0]; // Top <- Right
       } else {
-        // +Z counter-clockwise
+        // Counter-clockwise around Z: Top->Right->Bottom->Left->Top
         newColors[0] = colors[2]; // Right <- Top
         newColors[3] = colors[0]; // Bottom <- Right
         newColors[1] = colors[3]; // Left <- Bottom
